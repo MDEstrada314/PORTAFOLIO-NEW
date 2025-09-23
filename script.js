@@ -14,11 +14,12 @@ function crearDivs() {
        cajas.classList.add(`color${Math.floor(Math.random() * 4) + 1}`);
 
         cuadro.appendChild(cajas);
-        console.log("Hola Maicol");
 
-        cuadro.addEventListener('mouseover', () => {
-            cajas.classList.remove('color1', 'color2', 'color3', 'color4'); 
-            cajas.classList.add(`color${Math.floor(Math.random() * 4) + 1}`);
+        cajas.addEventListener('mouseover', (e) => {
+            let elementoActual = e.target;
+            elementoActual.classList.remove('color1', 'color2', 'color3', 'color4'); 
+            elementoActual.classList.add(`color${Math.floor(Math.random() * 4) + 1}`);
+            
         })
 
     }
