@@ -19,6 +19,11 @@ function crearDivs() {
             let elementoActual = e.target;
             elementoActual.classList.remove('color1', 'color2', 'color3', 'color4'); 
             elementoActual.classList.add(`color${Math.floor(Math.random() * 4) + 1}`);
+            elementoActual.classList.add('color-blerg');
+            setTimeout(() => {
+                elementoActual.classList.remove('color-blerg');
+            }, 100);
+            
             
         })
 
@@ -27,5 +32,4 @@ function crearDivs() {
 
 window.addEventListener('resize', crearDivs);
 window.addEventListener('load', crearDivs);
-
 

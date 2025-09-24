@@ -1,0 +1,123 @@
+
+<style>
+  :root{
+    --bg:#0c0d0f;
+    --grid:#ffffff;
+    --grid-alpha:0.45;
+    --neon:#39ff14;
+    --label:#ffb300;
+    --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
+  }
+  *{box-sizing:border-box}
+  .wrap{ width:min(880px, 92vw); aspect-ratio: 16/11; position:relative; }
+  svg{ width:100%; height:100%; display:block; }
+  .title{ font-size: clamp(18px,2.8vw,28px); font-weight:300; fill:#e8e8e8; }
+  .axis-label{ fill:var(--label); font-size:clamp(10px,1.6vw,16px); font-weight:500; letter-spacing:.2px; }
+  .grid{ stroke:var(--grid); stroke-opacity:var(--grid-alpha); fill:none; }
+  .grid-center{ stroke:var(--grid); stroke-opacity:.35; }
+  .neon{
+    fill:rgba(57,255,20,.12);
+    stroke:var(--neon);
+    stroke-width:3.25;
+    filter:url(#glow);
+  }
+  .neon-outline{
+    fill:none; stroke:var(--neon); stroke-width:1; opacity:.9;
+  }
+</style>
+
+<div class="wrap">
+  <svg id="radar" viewBox="0 0 1000 700" role="img" aria-label="Radar de habilidades">
+    <defs>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#39ff14" flood-opacity="1"/>
+        <feDropShadow dx="0" dy="0" stdDeviation="18" flood-color="#39ff14" flood-opacity=".55"/>
+      </filter>
+    </defs>
+    <g id="chart" transform="translate(420,350)"></g>
+  </svg>
+</div>
+
+<script>
+  const maxValue = 20;
+  const data = [18, 14, 16, 12, 19, 17];
+  const labels = [
+    'Blandas/20','Blandas/20','Blandas/20','Blandas/20','Blandas/20','Blandas/20'
+  ];
+  const levels = 4;
+  const radius = 230;
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const chart = document.getElementById('chart');
+
+  const toXY = (r, angleIndex, total=6) => {
+    const a = (-Math.PI/2) + (2*Math.PI*angleIndex/total);
+    return [r*Math.cos(a), r*Math.sin(a)];
+  };
+
+  // Malla
+  for(let i=1;i<=levels;i++){
+    const frac = i/(levels+1);
+    const path = document.createElementNS(svgNS,'path');
+    const d = Array.from({length:6}, (_,k)=>{
+      const [x,y] = toXY(radius*frac, k, 6);
+      return `${k? 'L':'M'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+    }).join(' ') + ' Z';
+    path.setAttribute('d', d);
+    path.setAttribute('class','grid');
+    chart.appendChild(path);
+  }
+
+  // Hex externo
+  const outer = document.createElementNS(svgNS,'path');
+  outer.setAttribute('d', (()=>{
+    const pts = Array.from({length:6}, (_,k)=>{
+      const [x,y] = toXY(radius, k, 6); return `${k? 'L':'M'} ${x} ${y}`;
+    }).join(' ') + ' Z';
+    return pts;
+  })());
+  outer.setAttribute('class','grid');
+  outer.setAttribute('stroke-width','2');
+  chart.appendChild(outer);
+
+  // Ejes
+  for(let k=0;k<6;k++){
+    const [x,y] = toXY(radius*0.66, k, 6);
+    const axis = document.createElementNS(svgNS,'line');
+    axis.setAttribute('x1','0'); axis.setAttribute('y1','0');
+    axis.setAttribute('x2', x); axis.setAttribute('y2', y);
+    axis.setAttribute('class','grid-center');
+    chart.appendChild(axis);
+  }
+
+  // Etiquetas
+  labels.forEach((txt, k)=>{
+    const [x,y] = toXY(radius+38, k, 6);
+    const t = document.createElementNS(svgNS,'text');
+    t.textContent = txt;
+    t.setAttribute('x', x);
+    t.setAttribute('y', y);
+    t.setAttribute('text-anchor', Math.abs(x) < 1 ? 'middle' : (x>0?'start':'end'));
+    t.setAttribute('dominant-baseline', y>0 ? 'hanging' : 'auto');
+    t.setAttribute('class','axis-label');
+    chart.appendChild(t);
+  });
+
+  // Polígono de datos
+  const points = data.map((v,k)=>{
+    const r = (v/maxValue)*radius*0.92 + radius*0.05;
+    const [x,y] = toXY(r, k, 6);
+    return `${k? 'L':'M'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+  }).join(' ') + ' Z';
+
+  const neon = document.createElementNS(svgNS,'path');
+  neon.setAttribute('d', points);
+  neon.setAttribute('class','neon');
+
+  const outline = document.createElementNS(svgNS,'path');
+  outline.setAttribute('d', points);
+  outline.setAttribute('class','neon-outline');
+
+  chart.appendChild(neon);
+  chart.appendChild(outline);
+</script>
